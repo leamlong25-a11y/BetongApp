@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* កំណត់ឱ្យរាល់អត្ថបទទាំងអស់ប្រើប្រាស់ Font Khmer OS Siemreap */
+body {
+  font-family: "Khmer OS Siemreap", sans-serif;
+}
