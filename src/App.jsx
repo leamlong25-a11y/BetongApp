@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { auth, onAuthStateChanged, signOut, db } from "./services/firebase";
+import { auth, onAuthStateChanged, db } from "./services/firebase";
 import { ref, onValue } from "firebase/database";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -15,7 +15,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [authView, setAuthView] = useState("login");
   const [activePage, setActivePage] = useState("home");
-  const [searchQuery, setSearchQuery] = useState(""); // បន្ថែម state សម្រាប់ស្វែងរក
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [companySettings, setCompanySettings] = useState({
     companyKhmerName: "ក្រុមហ៊ុនបេតុង ជី.ស៊ី.អិម ខនគ្រីត",
@@ -69,10 +69,10 @@ const App = () => {
 
   return (
     <div
-      className="min-h-screen bg-gray-950 text-gray-100 flex flex-col"
+      className="min-h-screen bg-gray-950 text-gray-100 flex flex-col select-none"
       style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
     >
-      {/* Top App Bar ជាមួយ Search functionality */}
+      {/* Top App Bar ជាមួយ Search Input */}
       <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       {/* Main Scrollable Content Area */}
