@@ -46,6 +46,13 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
+  // មុខងារ Refresh App
+  const handleRefresh = () => {
+    setActivePage("home");
+    setSearchQuery("");
+    window.location.reload(); // Refresh Browser ផ្ទាល់តែម្តងដើម្បីធានាថាទិន្នន័យស្រស់ថ្មី
+  };
+
   if (loading) {
     return (
       <div
@@ -73,8 +80,12 @@ const App = () => {
       className="min-h-screen bg-gray-950 text-gray-100 flex flex-col select-none"
       style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
     >
-      {/* Top App Bar ជាមួយ Search Input */}
-      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      {/* Top App Bar ជាមួយ onRefresh */}
+      <Navbar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onRefresh={handleRefresh}
+      />
 
       {/* Main Scrollable Content Area */}
       <main className="flex-1 overflow-y-auto pt-20 pb-28 px-4 print:pt-0 print:pb-0 print:px-0">

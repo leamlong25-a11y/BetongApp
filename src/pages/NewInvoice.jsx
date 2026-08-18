@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { db } from "../services/firebase";
+import { ref, push, set } from "firebase/database";
 
 const NewInvoice = ({ companySettings }) => {
   const [formData, setFormData] = useState({
@@ -22,6 +24,8 @@ const NewInvoice = ({ companySettings }) => {
       note: "",
     },
   ]);
+
+  const [loading, setLoading] = useState(false);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -58,8 +62,38 @@ const NewInvoice = ({ companySettings }) => {
     setItems(newItems);
   };
 
-  const handlePrint = () => {
-    window.print();
+  // មុខងារគណនា និងរក្សាទុកទិន្នន័យទៅ Firebase
+  const handleSaveAndPrint = async () => {
+    if (!formData.customerName) {
+      alert("សូមបញ្ចូលឈ្មោះអតិថិជនជាមុនសិន!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const invoicesRef = ref(db, "invoices");
+      const newInvoiceRef = push(invoicesRef);
+
+      const invoiceData = {
+        ...formData,
+        items,
+        totalInvoiceAmount,
+        totalSupplierCost,
+        totalQuantity,
+        netProfit,
+        createdAt: new Date().toISOString(),
+      };
+
+      await set(newInvoiceRef, invoiceData);
+      alert("✅ រក្សាទុកទិន្នន័យចូល Firebase ជោគជ័យ!");
+
+      // បន្ទាប់ពីរಕ್ಷាទុក រួចបើក Print Dialog
+      window.print();
+    } catch (error) {
+      alert("❌ មានបញ្ហាในการរក្សាទុក: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   let totalInvoiceAmount = 0;
@@ -81,15 +115,18 @@ const NewInvoice = ({ companySettings }) => {
   const netProfit = totalInvoiceAmount - totalSupplierCost;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div
+      className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto pb-16"
+      style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
+    >
       {/* ផ្នែកទី១៖ INPUT FORM */}
-      <div className="lg:col-span-5 bg-gray-800 p-3 sm:p-6 rounded-xl border border-gray-700 shadow-xl print:hidden space-y-4">
-        <h2 className="text-base sm:text-lg font-bold text-orange-400 border-b border-gray-700 pb-2">
-          📝 ទម្រង់បំពេញទិន្នន័យ (Input Form)
+      <div className="lg:col-span-5 bg-gray-800 p-4 sm:p-6 rounded-3xl border border-gray-700 shadow-xl print:hidden space-y-4">
+        <h2 className="text-base sm:text-lg font-extrabold text-orange-400 border-b border-gray-700 pb-2">
+          📝 ទម្រង់បំពេញវិក្កយបត្រ
         </h2>
 
         <div>
-          <label className="block text-xs font-medium mb-1 text-gray-300">
+          <label className="block text-xs font-bold mb-1 text-gray-300">
             ឈ្មោះអតិថិជន (To)
           </label>
           <input
@@ -97,12 +134,13 @@ const NewInvoice = ({ companySettings }) => {
             name="customerName"
             value={formData.customerName}
             onChange={handleFormChange}
-            className="w-full bg-gray-700 border border-gray-600 rounded p-2.5 text-sm focus:outline-none"
+            placeholder="ឈ្មោះអតិថិជន..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-1 text-gray-300">
+          <label className="block text-xs font-bold mb-1 text-gray-300">
             ទីតាំងការដ្ឋាន (Location)
           </label>
           <input
@@ -110,27 +148,31 @@ const NewInvoice = ({ companySettings }) => {
             name="siteLocation"
             value={formData.siteLocation}
             onChange={handleFormChange}
-            className="w-full bg-gray-700 border border-gray-600 rounded p-2.5 text-sm focus:outline-none"
+            placeholder="ទីតាំង..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-300">
+            <label className="block text-xs font-bold mb-1 text-gray-300">
               ទីផ្សារ (Market)
             </label>
             <select
               name="market"
               value={formData.market}
               onChange={handleFormChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded p-2.5 text-sm focus:outline-none"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
             >
-              <option value="ទីផ្សារ ក">ទីផ្សារ ក</option>
-              <option value="ទីផ្សារ ខ">ទីផ្សារ ខ</option>
+              {companySettings.markets?.map((m, idx) => (
+                <option key={idx} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-300">
+            <label className="block text-xs font-bold mb-1 text-gray-300">
               ថ្ងៃចេញវិក្កយបត្រ
             </label>
             <input
@@ -138,22 +180,20 @@ const NewInvoice = ({ companySettings }) => {
               name="issueDate"
               value={formData.issueDate}
               onChange={handleFormChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded p-2.5 text-sm focus:outline-none"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
             />
           </div>
         </div>
 
-        {/* លុបផ្នែក Upload Signature ចេញពីទីនេះ */}
-
         <div className="border-t border-gray-700 pt-3">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-3">
             <span className="text-xs font-bold text-orange-400">
               បញ្ជីជើងដឹកបេតុង (Delivery Rows)
             </span>
             <button
               type="button"
               onClick={addItemRow}
-              className="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1 rounded font-bold transition"
+              className="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1.5 rounded-xl font-bold transition shadow"
             >
               + បន្ថែមជើងដឹក
             </button>
@@ -163,7 +203,7 @@ const NewInvoice = ({ companySettings }) => {
             {items.map((item, index) => (
               <div
                 key={index}
-                className="bg-gray-900 p-3 rounded border border-gray-700 space-y-2 relative"
+                className="bg-gray-900 p-3.5 rounded-2xl border border-gray-700 space-y-3 relative"
               >
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-gray-300">
@@ -175,7 +215,7 @@ const NewInvoice = ({ companySettings }) => {
                       onClick={() => removeItemRow(index)}
                       className="text-red-400 hover:text-red-300 text-xs font-bold"
                     >
-                      លុប
+                      លុប ✕
                     </button>
                   )}
                 </div>
@@ -190,7 +230,7 @@ const NewInvoice = ({ companySettings }) => {
                       name="deliveryDate"
                       value={item.deliveryDate}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -201,16 +241,18 @@ const NewInvoice = ({ companySettings }) => {
                       name="concreteType"
                       value={item.concreteType}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-white"
                     >
-                      <option value="C25">C25</option>
-                      <option value="C30">C30</option>
-                      <option value="C35">C35</option>
+                      {companySettings.concreteTypes?.map((c, idx) => (
+                        <option key={idx} value={c}>
+                          {c}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
                       ចំនួន (m³)
@@ -221,7 +263,8 @@ const NewInvoice = ({ companySettings }) => {
                       name="quantity"
                       value={item.quantity}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
+                      placeholder="0"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -234,10 +277,11 @@ const NewInvoice = ({ companySettings }) => {
                       name="sellingPrice"
                       value={item.sellingPrice}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs text-green-400 font-bold"
+                      placeholder="0"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-green-400 font-bold"
                     />
                   </div>
-                  <div className="col-span-2 sm:col-span-1">
+                  <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
                       តម្លៃក្រុមហ៊ុន ($)
                     </label>
@@ -247,12 +291,13 @@ const NewInvoice = ({ companySettings }) => {
                       name="supplierPrice"
                       value={item.supplierPrice}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs text-red-400 font-bold"
+                      placeholder="0"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-red-400 font-bold"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
                       ថ្លៃបូម ($)
@@ -263,7 +308,8 @@ const NewInvoice = ({ companySettings }) => {
                       name="pumpFee"
                       value={item.pumpFee}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
+                      placeholder="0"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -276,10 +322,11 @@ const NewInvoice = ({ companySettings }) => {
                       name="deliveryFee"
                       value={item.deliveryFee}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
+                      placeholder="0"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-white"
                     />
                   </div>
-                  <div className="col-span-2 sm:col-span-1">
+                  <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
                       ចំណាំ
                     </label>
@@ -288,7 +335,8 @@ const NewInvoice = ({ companySettings }) => {
                       name="note"
                       value={item.note}
                       onChange={(e) => handleItemChange(index, e)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
+                      placeholder="..."
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-xs text-white"
                     />
                   </div>
                 </div>
@@ -298,7 +346,7 @@ const NewInvoice = ({ companySettings }) => {
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-1 text-gray-300">
+          <label className="block text-xs font-bold mb-1 text-gray-300">
             ចំណាំរួម (General Note)
           </label>
           <input
@@ -306,11 +354,12 @@ const NewInvoice = ({ companySettings }) => {
             name="generalNote"
             value={formData.generalNote}
             onChange={handleFormChange}
-            className="w-full bg-gray-700 border border-gray-600 rounded p-2.5 text-sm focus:outline-none"
+            placeholder="ចំណាំរួមសម្រាប់វិក្កយបត្រ..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
           />
         </div>
 
-        <div className="mt-4 p-3 bg-gray-900 rounded border border-gray-700 text-xs space-y-1">
+        <div className="p-3.5 bg-gray-900 rounded-2xl border border-gray-700 text-xs space-y-1.5">
           <div className="flex justify-between text-gray-400">
             <span>សរុបថ្លៃដើមក្រុមហ៊ុន:</span>
             <span className="text-red-400 font-bold">
@@ -326,15 +375,16 @@ const NewInvoice = ({ companySettings }) => {
         </div>
 
         <button
-          onClick={handlePrint}
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-lg font-bold shadow-lg transition flex items-center justify-center gap-2"
+          onClick={handleSaveAndPrint}
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white p-3.5 rounded-2xl font-bold shadow-xl transition flex items-center justify-center gap-2 text-sm"
         >
-          🖨️ បោះពុម្ព / Save PDF
+          {loading ? "กำลังរក្សាទុក..." : "🖨️ រក្សាទុក & បោះពុម្ព (Save & PDF)"}
         </button>
       </div>
 
       {/* ផ្នែកទី២៖ INVOICE PREVIEW */}
-      <div className="lg:col-span-7 bg-white text-black p-3 sm:p-8 rounded-xl shadow-2xl overflow-x-hidden print:w-full print:shadow-none print:p-0">
+      <div className="lg:col-span-7 bg-white text-black p-4 sm:p-8 rounded-3xl shadow-2xl overflow-x-hidden print:w-full print:shadow-none print:p-0">
         <div className="text-center pb-2 mb-4">
           <h1
             className="text-xs sm:text-base font-bold text-black mb-1"
@@ -384,21 +434,17 @@ const NewInvoice = ({ companySettings }) => {
           <table className="w-full border-collapse border border-gray-800 mb-4 text-[10px] sm:text-xs">
             <thead>
               <tr className="bg-gray-100 text-center">
-                <th className="border border-gray-800 p-1 sm:p-2">No</th>
-                <th className="border border-gray-800 p-1 sm:p-2">Date</th>
-                <th className="border border-gray-800 p-1 sm:p-2">
+                <th className="border border-gray-800 p-1.5">No</th>
+                <th className="border border-gray-800 p-1.5">Date</th>
+                <th className="border border-gray-800 p-1.5">
                   Concrete Strength
                 </th>
-                <th className="border border-gray-800 p-1 sm:p-2">Quantity</th>
-                <th className="border border-gray-800 p-1 sm:p-2">
-                  Unite Price
-                </th>
-                <th className="border border-gray-800 p-1 sm:p-2">Pump fee</th>
-                <th className="border border-gray-800 p-1 sm:p-2">
-                  Delivery fee
-                </th>
-                <th className="border border-gray-800 p-1 sm:p-2">Amount</th>
-                <th className="border border-gray-800 p-1 sm:p-2">Note</th>
+                <th className="border border-gray-800 p-1.5">Quantity</th>
+                <th className="border border-gray-800 p-1.5">Unite Price</th>
+                <th className="border border-gray-800 p-1.5">Pump fee</th>
+                <th className="border border-gray-800 p-1.5">Delivery fee</th>
+                <th className="border border-gray-800 p-1.5">Amount</th>
+                <th className="border border-gray-800 p-1.5">Note</th>
               </tr>
             </thead>
             <tbody>
@@ -411,31 +457,31 @@ const NewInvoice = ({ companySettings }) => {
 
                 return (
                   <tr key={index} className="text-center">
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       {index + 1}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       {item.deliveryDate || ""}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2 font-bold">
+                    <td className="border border-gray-800 p-1.5 font-bold">
                       {item.concreteType}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       {item.quantity ? `${item.quantity}m³` : ""}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       $ {price.toFixed(2)}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       $ {pump.toFixed(2)}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       $ {delivery.toFixed(2)}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2 font-bold text-red-600">
+                    <td className="border border-gray-800 p-1.5 font-bold text-red-600">
                       $ {rowAmount.toFixed(2)}
                     </td>
-                    <td className="border border-gray-800 p-1 sm:p-2">
+                    <td className="border border-gray-800 p-1.5">
                       {item.note || ""}
                     </td>
                   </tr>
@@ -445,22 +491,22 @@ const NewInvoice = ({ companySettings }) => {
               <tr className="font-bold bg-white text-center">
                 <td
                   colSpan="3"
-                  className="border border-gray-800 p-1 sm:p-2 text-center"
+                  className="border border-gray-800 p-1.5 text-center"
                 >
                   Total
                 </td>
-                <td className="border border-gray-800 p-1 sm:p-2">
+                <td className="border border-gray-800 p-1.5">
                   {totalQuantity > 0 ? `${totalQuantity.toFixed(2)}m³` : ""}
                 </td>
-                <td className="border border-gray-800 p-1 sm:p-2"></td>
-                <td className="border border-gray-800 p-1 sm:p-2"></td>
-                <td className="border border-gray-800 p-1 sm:p-2"></td>
-                <td className="border border-gray-800 p-1 sm:p-2 text-red-600 font-bold">
+                <td className="border border-gray-800 p-1.5"></td>
+                <td className="border border-gray-800 p-1.5"></td>
+                <td className="border border-gray-800 p-1.5"></td>
+                <td className="border border-gray-800 p-1.5 text-red-600 font-bold">
                   {totalInvoiceAmount > 0
                     ? `$ ${totalInvoiceAmount.toFixed(2)}`
                     : ""}
                 </td>
-                <td className="border border-gray-800 p-1 sm:p-2"></td>
+                <td className="border border-gray-800 p-1.5"></td>
               </tr>
             </tbody>
           </table>
@@ -482,7 +528,6 @@ const NewInvoice = ({ companySettings }) => {
         >
           <div className="text-center">
             <div className="h-12 flex items-center justify-center mb-1">
-              {/* ប្រើប្រាស់ហត្ថលេខាពី Settings */}
               {companySettings.signatureUrl ? (
                 <img
                   src={companySettings.signatureUrl}
@@ -490,9 +535,7 @@ const NewInvoice = ({ companySettings }) => {
                   className="max-h-12 object-contain"
                 />
               ) : (
-                <div className="h-10 text-gray-400 italic text-[10px]">
-                  (No Signature)
-                </div>
+                <div className="h-10"></div>
               )}
             </div>
             <div className="border-t border-black w-28 sm:w-48 pt-1 font-bold">
@@ -504,7 +547,15 @@ const NewInvoice = ({ companySettings }) => {
           </div>
           <div className="text-center">
             <div className="h-12 flex items-center justify-center mb-1">
-              <div className="h-10"></div>
+              {companySettings.financeSignatureUrl ? (
+                <img
+                  src={companySettings.financeSignatureUrl}
+                  alt="Finance Signature"
+                  className="max-h-12 object-contain"
+                />
+              ) : (
+                <div className="h-10"></div>
+              )}
             </div>
             <div className="border-t border-black w-28 sm:w-48 pt-1 font-bold">
               CHECK / FINANCE
