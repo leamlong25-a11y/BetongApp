@@ -200,9 +200,10 @@ const NewInvoice = ({ companySettings }) => {
                   )}
                 </div>
 
+                {/* ជួរទី១៖ ថ្ងៃដឹក និង ប្រភេទបេតុង (Responsive: 2 ជួរជានិច្ច) */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[10px] text-gray-400">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       ថ្ងៃដឹក
                     </label>
                     <input
@@ -214,7 +215,7 @@ const NewInvoice = ({ companySettings }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-gray-400">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       ប្រភេទបេតុង
                     </label>
                     <select
@@ -230,9 +231,10 @@ const NewInvoice = ({ companySettings }) => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                {/* ជួរទី២៖ ចំនួន, លក់, ក្រុមហ៊ុន (Responsive: Mobile ២ជួរ, PC ៣ជួរ) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] text-gray-400">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       ចំនួន (m³)
                     </label>
                     <input
@@ -245,7 +247,7 @@ const NewInvoice = ({ companySettings }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-gray-400">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       តម្លៃលក់ ($)
                     </label>
                     <input
@@ -257,8 +259,8 @@ const NewInvoice = ({ companySettings }) => {
                       className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs text-green-400 font-bold"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       តម្លៃក្រុមហ៊ុន ($)
                     </label>
                     <input
@@ -272,9 +274,10 @@ const NewInvoice = ({ companySettings }) => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                {/* ជួរទី៣៖ ថ្លៃបូម, ថ្លៃដឹក, ចំណាំ (Responsive: Mobile ២ជួរ, PC ៣ជួរ) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] text-gray-400">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       ថ្លៃបូម ($)
                     </label>
                     <input
@@ -287,7 +290,7 @@ const NewInvoice = ({ companySettings }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-gray-400">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       ថ្លៃដឹក ($)
                     </label>
                     <input
@@ -299,8 +302,8 @@ const NewInvoice = ({ companySettings }) => {
                       className="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] text-gray-400 mb-1">
                       ចំណាំ
                     </label>
                     <input
