@@ -103,7 +103,7 @@ const Dashboard = ({ searchQuery }) => {
           </div>
           <p className="text-[10px] text-gray-400 font-bold">វិក្កយបត្រសរុប</p>
           <h3 className="text-lg font-extrabold text-white">
-            {totalInvoicesCount} ជក
+            {totalInvoicesCount} វិក្កយបត្រ
           </h3>
         </div>
 
