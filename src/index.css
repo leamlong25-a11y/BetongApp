@@ -4,3 +4,13 @@
 body {
   font-family: "Khmer OS Siemreap", sans-serif;
 }
+@import url("https://fonts.googleapis.com/css2?family=Siemreap&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* កំណត់ Font "Khmer OS Siemreap" សម្រាប់ App ទាំងមូលជា Default */
+body {
+  font-family: "Khmer OS Siemreap", "Siemreap", sans-serif;
+}

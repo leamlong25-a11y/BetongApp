@@ -9,16 +9,6 @@ const NewInvoice = ({ companySettings }) => {
     generalNote: "",
   });
 
-  const [signatureImage, setSignatureImage] = useState(null);
-
-  const handleSignatureUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setSignatureImage(imageUrl);
-    }
-  };
-
   const [items, setItems] = useState([
     {
       id: 1,
@@ -153,17 +143,7 @@ const NewInvoice = ({ companySettings }) => {
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-1 text-gray-300">
-            រូបភាពហត្ថលេខា (Signature Image)
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleSignatureUpload}
-            className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-xs text-gray-300"
-          />
-        </div>
+        {/* លុបផ្នែក Upload Signature ចេញពីទីនេះ */}
 
         <div className="border-t border-gray-700 pt-3">
           <div className="flex justify-between items-center mb-2">
@@ -200,7 +180,6 @@ const NewInvoice = ({ companySettings }) => {
                   )}
                 </div>
 
-                {/* ជួរទី១៖ ថ្ងៃដឹក និង ប្រភេទបេតុង (Responsive: 2 ជួរជានិច្ច) */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
@@ -231,7 +210,6 @@ const NewInvoice = ({ companySettings }) => {
                   </div>
                 </div>
 
-                {/* ជួរទី២៖ ចំនួន, លក់, ក្រុមហ៊ុន (Responsive: Mobile ២ជួរ, PC ៣ជួរ) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
@@ -274,7 +252,6 @@ const NewInvoice = ({ companySettings }) => {
                   </div>
                 </div>
 
-                {/* ជួរទី៣៖ ថ្លៃបូម, ថ្លៃដឹក, ចំណាំ (Responsive: Mobile ២ជួរ, PC ៣ជួរ) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] text-gray-400 mb-1">
@@ -505,14 +482,17 @@ const NewInvoice = ({ companySettings }) => {
         >
           <div className="text-center">
             <div className="h-12 flex items-center justify-center mb-1">
-              {signatureImage ? (
+              {/* ប្រើប្រាស់ហត្ថលេខាពី Settings */}
+              {companySettings.signatureUrl ? (
                 <img
-                  src={signatureImage}
+                  src={companySettings.signatureUrl}
                   alt="Signature"
                   className="max-h-12 object-contain"
                 />
               ) : (
-                <div className="h-10"></div>
+                <div className="h-10 text-gray-400 italic text-[10px]">
+                  (No Signature)
+                </div>
               )}
             </div>
             <div className="border-t border-black w-28 sm:w-48 pt-1 font-bold">

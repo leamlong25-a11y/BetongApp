@@ -1,38 +1,27 @@
 import React from "react";
 
-const Navbar = ({ activePage, onToggleSidebar, onGoToProfile, onLogout }) => {
+const Navbar = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center shadow-md print:hidden">
-      {/* ប៊ូតុង Toggle សម្រាប់បង្ហាញ/លាក់ Sidebar លើ Phone និងបង្ហាញชื่อ Page */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onToggleSidebar}
-          className="md:hidden bg-gray-700 hover:bg-gray-600 text-orange-400 p-2 rounded-lg text-base font-bold transition shadow"
-          title="Toggle Menu"
-        >
-          ☰
-        </button>
-        <span className="text-sm font-bold text-orange-400 capitalize">
-          ទំព័រ: {activePage}
-        </span>
-      </div>
-
-      {/* ផ្នែកប៊ូតុង Profile និង Logout */}
+    <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 h-16 flex items-center justify-between px-4 z-50 print:hidden shadow-sm">
       <div className="flex items-center gap-2">
-        <button
-          onClick={onGoToProfile}
-          className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5"
+        <span className="text-2xl">🏗️</span>
+        <h1
+          className="text-lg font-extrabold text-white tracking-wide"
+          style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
         >
-          <span>👤</span> Profile
-        </button>
-
-        <button
-          onClick={onLogout}
-          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow"
-        >
-          🚪 ထွက် (Logout)
-        </button>
+          App<span className="text-orange-500">Betong</span>
+        </h1>
       </div>
+
+      {/* Text input for search */}
+      <input
+        type="text"
+        placeholder="ស្វែងរក..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="bg-gray-800 border border-gray-700 text-white text-xs rounded-full px-4 py-2 w-32 sm:w-48 focus:outline-none focus:border-orange-500"
+        style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
+      />
     </div>
   );
 };

@@ -4,19 +4,18 @@ import { ref, onValue } from "firebase/database";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Sidebar from "./components/Sidebar";
-import Navbar from "./components/Navbar"; // <-- កែសម្រួល Path ត្រង់នេះឱ្យត្រូវនឹង components
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import NewInvoice from "./pages/NewInvoice";
 import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authView, setAuthView] = useState("login");
   const [activePage, setActivePage] = useState("home");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // បន្ថែម state សម្រាប់ស្វែងរក
 
   const [companySettings, setCompanySettings] = useState({
     companyKhmerName: "ក្រុមហ៊ុនបេតុង ជី.ស៊ី.អិម ខនគ្រីត",
@@ -24,6 +23,9 @@ const App = () => {
     abaNumber: "500 208 793",
     accountHolder: "LEAM SEAKNGENG",
     signatureUrl: "",
+    financeSignatureUrl: "",
+    concreteTypes: ["C25", "C30", "C35"],
+    markets: ["ទីផ្សារ ក", "ទីផ្សារ ខ"],
   });
 
   useEffect(() => {
@@ -38,30 +40,26 @@ const App = () => {
     const settingsRef = ref(db, "settings");
     const unsubscribe = onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) {
-        setCompanySettings((prev) => ({ ...prev, ...data }));
-      }
+      if (data) setCompanySettings((prev) => ({ ...prev, ...data }));
     });
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-        <p>កំពុងផ្ទុកទិន្នន័យ...</p>
+      <div
+        className="min-h-screen bg-gray-950 flex items-center justify-center text-white"
+        style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
+      >
+        កំពុងផ្ទុក...
       </div>
     );
   }
 
   if (!user) {
-    if (authView === "signup") {
-      return <Signup onSwitchToLogin={() => setAuthView("login")} />;
-    }
-    return (
+    return authView === "signup" ? (
+      <Signup onSwitchToLogin={() => setAuthView("login")} />
+    ) : (
       <Login
         onLoginSuccess={() => setUser(auth.currentUser)}
         onSwitchToSignup={() => setAuthView("signup")}
@@ -70,44 +68,30 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex text-gray-100">
-      <Sidebar
-        activePage={activePage}
-        setActivePage={setActivePage}
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
-      />
+    <div
+      className="min-h-screen bg-gray-950 text-gray-100 flex flex-col"
+      style={{ fontFamily: '"Khmer OS Siemreap", sans-serif' }}
+    >
+      {/* Top App Bar ជាមួយ Search functionality */}
+      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar
-          activePage={activePage}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          onLogout={handleLogout}
-        />
+      {/* Main Scrollable Content Area */}
+      <main className="flex-1 overflow-y-auto pt-20 pb-28 px-4 print:pt-0 print:pb-0 print:px-0">
+        {activePage === "home" && <Home setActivePage={setActivePage} />}
+        {activePage === "dashboard" && <Dashboard searchQuery={searchQuery} />}
+        {activePage === "invoice" && (
+          <NewInvoice companySettings={companySettings} />
+        )}
+        {activePage === "settings" && (
+          <Settings
+            companySettings={companySettings}
+            setCompanySettings={setCompanySettings}
+          />
+        )}
+      </main>
 
-        <main className="p-4 sm:p-6 overflow-y-auto flex-1">
-          {activePage === "home" && <Home setActivePage={setActivePage} />}
-          {activePage === "dashboard" && (
-            <Dashboard setActivePage={setActivePage} />
-          )}
-          {activePage === "invoice" && (
-            <NewInvoice companySettings={companySettings} />
-          )}
-          {activePage === "settings" && (
-            <Settings
-              companySettings={companySettings}
-              setCompanySettings={setCompanySettings}
-              onGoToProfile={() => setActivePage("profile")}
-            />
-          )}
-          {activePage === "profile" && (
-            <Profile
-              user={user}
-              onBackToSettings={() => setActivePage("settings")}
-            />
-          )}
-        </main>
-      </div>
+      {/* Bottom Navigation */}
+      <Sidebar activePage={activePage} setActivePage={setActivePage} />
     </div>
   );
 };
