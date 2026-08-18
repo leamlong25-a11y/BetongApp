@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import NewInvoice from "./pages/NewInvoice";
+import Report from "./pages/Report";
 import Settings from "./pages/Settings";
 
 const App = () => {
@@ -82,6 +83,7 @@ const App = () => {
         {activePage === "invoice" && (
           <NewInvoice companySettings={companySettings} />
         )}
+        {activePage === "report" && <Report searchQuery={searchQuery} />}
         {activePage === "settings" && (
           <Settings
             companySettings={companySettings}
